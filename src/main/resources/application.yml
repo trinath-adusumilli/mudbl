@@ -6,10 +6,3 @@ spring:
       database: TweetScraper
       port: 27017
       host: 119.45.163.114
-
-runtime: java
-env: flex
-
-handlers:
-  - url: /.*
-    script: this field is required, but ignored
