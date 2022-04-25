@@ -1,5 +1,6 @@
 package com.twitter.mudbl.controller;
 
+import com.twitter.mudbl.model.TwitterWeeklyAverageData;
 import com.twitter.mudbl.model.TwitterData;
 import com.twitter.mudbl.service.TweetScraperService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,17 @@ public class TweetScraperController {
     TweetScraperService tweetScraperService;
 
     @GetMapping("/count")
-    public long getCount(){
+    public long getCount() {
         return tweetScraperService.getCountOfObjects();
     }
 
     @GetMapping("/source")
-    public List<TwitterData> getSource(@RequestParam String key){
+    public List<TwitterData> getSource(@RequestParam String key) {
         return tweetScraperService.getSourceDetailsCount(key);
+    }
+
+    @GetMapping("/dailyPositiveNumber")
+    public List<TwitterWeeklyAverageData> getDailyPositive(@RequestParam(required = false, value = "year") Integer year) {
+        return tweetScraperService.getDailyPositiveNumber(year);
     }
 }
