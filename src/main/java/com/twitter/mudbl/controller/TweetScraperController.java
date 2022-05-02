@@ -1,7 +1,7 @@
 package com.twitter.mudbl.controller;
 
-import com.twitter.mudbl.model.TwitterWeeklyAverageData;
 import com.twitter.mudbl.model.TwitterData;
+import com.twitter.mudbl.model.TwitterWeeklyAverageData;
 import com.twitter.mudbl.service.TweetScraperService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,5 +29,10 @@ public class TweetScraperController {
     @GetMapping("/dailyPositiveNumber")
     public List<TwitterWeeklyAverageData> getDailyPositive(@RequestParam(required = false, value = "year") Integer year) {
         return tweetScraperService.getDailyPositiveNumber(year);
+    }
+
+    @GetMapping("/relatedWords")
+    public String getRelatedWords(@RequestParam String word) {
+        return tweetScraperService.getRelatedWords(word);
     }
 }
