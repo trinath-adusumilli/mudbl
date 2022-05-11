@@ -1,8 +1,8 @@
 spring:
   data:
     mongodb:
-      username: jiacheng
-      password: Igf8%*fg6$%gftdf
+      username: trinath
+      password: ujv8U*KT$gyO-6UI#Hu+h7
       database: TweetScraper
-      port: 27017
-      host: 119.45.163.114
+      port: 57017
+      host: digbio-devel.missouri.edu
