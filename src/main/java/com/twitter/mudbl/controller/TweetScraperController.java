@@ -27,7 +27,7 @@ public class TweetScraperController {
     }
 
     @GetMapping("/dailyPositiveNumber")
-    public List<TwitterWeeklyAverageData> getDailyPositive(@RequestParam(required = false, value = "year") Integer year) {
+    public List<TwitterWeeklyAverageData> getDailyPositive(@RequestParam(required = false, value = "year") String year) {
         return tweetScraperService.getDailyPositiveNumber(year);
     }
 

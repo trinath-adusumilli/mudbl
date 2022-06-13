@@ -59,7 +59,7 @@ public class TweetScraperService {
         return result;
     }
 
-    public List<TwitterWeeklyAverageData> getDailyPositiveNumber(Integer year) {
+    public List<TwitterWeeklyAverageData> getDailyPositiveNumber(String year) {
 
         AggregationResults<TwitterWeeklyAverageData> groupResults = null;
         Aggregation aggregation = null;
@@ -90,7 +90,7 @@ public class TweetScraperService {
                             .and("week").as("weekNumber"),
                     sort(Sort.Direction.ASC, "year", "weekNumber"));
         } else {
-            String currentDate = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now().minusYears(year));
+            String currentDate = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now().minusYears(Integer.parseInt(year)));
 
             //This is an aggregation for daily tweet count
 //            aggregation = newAggregation(
