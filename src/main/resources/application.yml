@@ -6,3 +6,7 @@ spring:
       database: TweetScraper
       port: 57017
       host: digbio-devel.missouri.edu
+
+server:
+  tomcat:
+    relaxed-query-chars: '|,{,},[,]'

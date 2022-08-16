@@ -1,5 +1,6 @@
 package com.twitter.mudbl.service;
 
+import com.twitter.mudbl.exception.MyResourceNotFoundException;
 import com.twitter.mudbl.model.TweetScraper;
 import com.twitter.mudbl.model.TwitterData;
 import com.twitter.mudbl.model.TwitterWeeklyAverageData;
@@ -61,10 +62,11 @@ public class TweetScraperService {
 
     public List<TwitterWeeklyAverageData> getDailyPositiveNumber(String year) {
 
-        AggregationResults<TwitterWeeklyAverageData> groupResults = null;
-        Aggregation aggregation = null;
+        try {
+            AggregationResults<TwitterWeeklyAverageData> groupResults = null;
+            Aggregation aggregation = null;
 
-        if (year == null) {
+            if (year == null) {
 
 //            This is a aggregate expression for daily tweet count
 //            aggregation = newAggregation(
@@ -76,23 +78,23 @@ public class TweetScraperService {
 //                    project("total").and("date").previousOperation(),
 //                    sort(Sort.Direction.ASC, "date"));
 
-            //This is an aggregation for weekly tweet average
-            aggregation = newAggregation(
-                    match(Criteria.where("model_label_result").is(true)),
-                    project()
-                            .and(weekOf(ConvertOperators.ToDate.toDate(DateOperators.DateFromString.fromStringOf("created_at"))))
-                            .as("week")
-                            .and(yearOf(ConvertOperators.ToDate.toDate(DateOperators.DateFromString.fromStringOf("created_at")))).as("year"),
-                    group("week", "year").count().as("total"),
-                    project()
-                            .and("total").divide(7).as("average")
-                            .and("year").as("year")
-                            .and("week").as("weekNumber"),
-                    sort(Sort.Direction.ASC, "year", "weekNumber"));
-        } else {
-            String currentDate = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now().minusYears(Integer.parseInt(year)));
+                //This is an aggregation for weekly tweet average
+                aggregation = newAggregation(
+                        match(Criteria.where("model_label_result").is(true)),
+                        project()
+                                .and(weekOf(ConvertOperators.ToDate.toDate(DateOperators.DateFromString.fromStringOf("created_at"))))
+                                .as("week")
+                                .and(yearOf(ConvertOperators.ToDate.toDate(DateOperators.DateFromString.fromStringOf("created_at")))).as("year"),
+                        group("week", "year").count().as("total"),
+                        project()
+                                .and("total").divide(7).as("average")
+                                .and("year").as("year")
+                                .and("week").as("weekNumber"),
+                        sort(Sort.Direction.ASC, "year", "weekNumber"));
+            } else {
+                String currentDate = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now().minusYears(Integer.parseInt(year)));
 
-            //This is an aggregation for daily tweet count
+                //This is an aggregation for daily tweet count
 //            aggregation = newAggregation(
 //                    match(Criteria.where("model_label_result").is(true)),
 //                    project("model_label_result")
@@ -103,31 +105,36 @@ public class TweetScraperService {
 //                    match(Criteria.where("date").gte(currentDate)),
 //                    sort(Sort.Direction.ASC, "date"));
 
-            //This is an aggregation for weekly tweet average
-            aggregation = newAggregation(
-                    match(Criteria.where("model_label_result").is(true)),
-                    match(Criteria.where("created_at").gte(currentDate)),
-                    project()
-                            .and(weekOf(ConvertOperators.ToDate.toDate(DateOperators.DateFromString.fromStringOf("created_at"))))
-                            .as("week")
-                            .and(yearOf(ConvertOperators.ToDate.toDate(DateOperators.DateFromString.fromStringOf("created_at")))).as("year"),
-                    group("week", "year").count().as("total"),
-                    project()
-                            .and("total").divide(7).as("average")
-                            .and("year").as("year")
-                            .and("week").as("weekNumber"),
-                    sort(Sort.Direction.ASC, "year", "weekNumber"));
+                //This is an aggregation for weekly tweet average
+                aggregation = newAggregation(
+                        match(Criteria.where("model_label_result").is(true)),
+                        match(Criteria.where("created_at").gte(currentDate)),
+                        project()
+                                .and(weekOf(ConvertOperators.ToDate.toDate(DateOperators.DateFromString.fromStringOf("created_at"))))
+                                .as("week")
+                                .and(yearOf(ConvertOperators.ToDate.toDate(DateOperators.DateFromString.fromStringOf("created_at")))).as("year"),
+                        group("week", "year").count().as("total"),
+                        project()
+                                .and("total").divide(7).as("average")
+                                .and("year").as("year")
+                                .and("week").as("weekNumber"),
+                        sort(Sort.Direction.ASC, "year", "weekNumber"));
+            }
+
+
+            groupResults = mongoTemplate.aggregate(aggregation, TweetScraper.class, TwitterWeeklyAverageData.class);
+
+            for (TwitterWeeklyAverageData twitterWeeklyAverageData : groupResults.getMappedResults()) {
+                twitterWeeklyAverageData.setStartDate(getFirstDayOfWeek(Integer.parseInt(twitterWeeklyAverageData.getWeekNumber()), Integer.parseInt(twitterWeeklyAverageData.getYear())));
+                twitterWeeklyAverageData.setEndDate(getLastDayOfWeek(Integer.parseInt(twitterWeeklyAverageData.getWeekNumber()), Integer.parseInt(twitterWeeklyAverageData.getYear())));
+            }
+
+            return groupResults.getMappedResults();
+        }
+        catch (Exception ex){
+            throw new MyResourceNotFoundException();
         }
 
-
-        groupResults = mongoTemplate.aggregate(aggregation, TweetScraper.class, TwitterWeeklyAverageData.class);
-
-        for (TwitterWeeklyAverageData twitterWeeklyAverageData : groupResults.getMappedResults()) {
-            twitterWeeklyAverageData.setStartDate(getFirstDayOfWeek(Integer.parseInt(twitterWeeklyAverageData.getWeekNumber()), Integer.parseInt(twitterWeeklyAverageData.getYear())));
-            twitterWeeklyAverageData.setEndDate(getLastDayOfWeek(Integer.parseInt(twitterWeeklyAverageData.getWeekNumber()), Integer.parseInt(twitterWeeklyAverageData.getYear())));
-        }
-
-        return groupResults.getMappedResults();
     }
 
     static String getFirstDayOfWeek(int weekNumber, int year) {
